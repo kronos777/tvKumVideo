@@ -91,7 +91,15 @@ public class MainFragment extends BrowseSupportFragment {
 
         setupEventListeners();
 
-        getWebsite(3000);
+        //check all file in device
+        getAllFilesMovies();
+         getWebsite(3000);
+        //check connection internet
+        isConnected = hasConnection(getActivity());
+        playVideoKpd();
+       // getAllFilesMovies();
+        Log.d("exceptionThread", String.valueOf(isConnected));
+        //Toast.makeText(getActivity(), "главный фрагмент запущен", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -283,22 +291,26 @@ public class MainFragment extends BrowseSupportFragment {
 
             try {
                 Document doc = Jsoup.connect("http://iziboro0.beget.tech/kummedia/orehovo").get();
+
                 Elements links = doc.select("li");
                 ArrayList<String> mExampleList = new ArrayList<>();
 
                 for (Element link : links) {
                     String[] stringSite = link.text().split("/");
+
                     String fileName = stringSite[stringSite.length-1];
+
                     mExampleList.add(fileName);
-                    Toast.makeText(getActivity(), "файлы на сервере :" + fileName, Toast.LENGTH_SHORT).show();
-                  /*  if (!allLocalFiles.contains(fileName)) {
+
+                    //Toast.makeText(getActivity(), "файлы на сервере :" + fileName, Toast.LENGTH_SHORT).show();
+                   if (!allLocalFiles.contains(fileName)) {
                         downLoadFile(link.text());
                     }
-*/
+
 
                 }
-
-              /*  if(allLocalFiles.size() > 0) {
+             //   Log.d("exceptionThread", mExampleList.toString());
+                if(allLocalFiles.size() > 0) {
                     for (int i = 0; i < allLocalFiles.size(); i++) {
                         String locFilesName = allLocalFiles.get(i);
                         if (!mExampleList.contains(locFilesName)) {
@@ -308,17 +320,39 @@ public class MainFragment extends BrowseSupportFragment {
                     }
                 } else {
                     getAllFilesMovies();
-                }*/
+                }
 
 
             } catch (IOException e) {
                 builder.append("Error : ").append(e.getMessage()).append("\n");
+               // Log.d("exceptionThread", e.getMessage());
+               // Toast.makeText(getActivity(), "выкинул исключение " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
-            //runOnUiThread(() -> Toast.makeText(getActivity(), "файлов в директории нет", Toast.LENGTH_SHORT).show(););
+            getActivity().runOnUiThread(() -> Toast.makeText(getActivity(), "файлов в директории нет" + allLocalFiles, Toast.LENGTH_SHORT).show());
             //runOnUiThread(() -> launchMainActivity(sleepTime));
         }).start();
     }
+
+    private void playVideoKpd() {
+        if(allLocalFiles.size() > 0 ) {
+
+            if (isConnected) {
+                getWebsite(20000);
+                Toast.makeText(getActivity(), "запускаем видео после синхронизации" + isConnected, Toast.LENGTH_SHORT).show();
+            }
+
+        } else {
+            if (!isConnected) {
+                Toast.makeText(getActivity(), "нет подключения к интернету", Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(getActivity(), "файлов в директории нет" + allLocalFiles.size(), Toast.LENGTH_SHORT).show();
+                getWebsite(35000);
+            }
+        }
+    }
+
 
     private boolean hasConnection(final Context context)
     {
